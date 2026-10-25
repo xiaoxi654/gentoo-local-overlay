@@ -1,0 +1,18 @@
+Make queueItem::operator== const.
+
+QMultiMap::remove() takes its value argument by const reference and compares
+it against the stored value, so the comparison operator must be const-
+qualified.  Qt >= 6.11.1 compares through a const_iterator and rejects the
+non-const version, which breaks the build of src/cachingqueue.cpp.
+
+--- a/include/cachingqueue.h
++++ b/include/cachingqueue.h
+@@ -40,7 +40,7 @@
+     bool recurring;
+     qint64 id = QDateTime::currentMSecsSinceEpoch();
+ 
+-    bool operator==(const queueItem& lhs)
++    bool operator==(const queueItem& lhs) const
+     {
+         return (lhs.command == command &&
+                 lhs.receiver == receiver &&

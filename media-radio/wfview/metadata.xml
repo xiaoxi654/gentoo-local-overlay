@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+	<maintainer type="person">
+		<name>Yoshida Kanae</name>
+		<email>xiaoxi@izm.im</email>
+	</maintainer>
+	<longdescription lang="en">
+		wfview is an open source application for controlling and visualizing
+		modern Icom, Kenwood and Yaesu transceivers over serial or network
+		links.  It provides a graphical interface for frequency and mode
+		control, spectrum display, remote audio via Opus over UDP, CI-V
+		operation and a built-in rig control server.
+	</longdescription>
+	<upstream>
+		<remote-id type="github">wf-group/wfview</remote-id>
+		<bugs-to>https://github.com/wf-group/wfview/issues</bugs-to>
+		<changelog>https://github.com/wf-group/wfview/releases</changelog>
+	</upstream>
+</pkgmetadata>

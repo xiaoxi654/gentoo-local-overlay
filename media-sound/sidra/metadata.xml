@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+	<maintainer type="person">
+		<name>Yoshida Kanae</name>
+		<email>xiaoxi@izm.im</email>
+	</maintainer>
+	<longdescription lang="en">
+		Sidra is an elegant Apple Music desktop client for Linux, macOS and
+		Windows. It loads music.apple.com inside CastLabs Electron, which is
+		required for Widevine DRM on Linux.
+	</longdescription>
+	<upstream>
+		<remote-id type="github">wimpysworld/sidra</remote-id>
+		<bugs-to>https://github.com/wimpysworld/sidra/issues</bugs-to>
+	</upstream>
+</pkgmetadata>

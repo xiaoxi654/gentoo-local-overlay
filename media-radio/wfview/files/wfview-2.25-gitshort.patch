@@ -1,0 +1,20 @@
+Evaluate GITSHORT once at qmake time instead of at make time.
+
+The $(shell ...) form is emitted into the generated Makefile and executed by
+make for every compiled translation unit.  A release tarball contains no .git
+directory, so every compile prints "fatal: not a git repository".  Evaluate
+the command once during qmake, suppress git's diagnostics and fall back to the
+packaged version so release builds still report a sensible build string.
+
+--- a/wfview.pro
++++ b/wfview.pro
+@@ -130,7 +130,8 @@
+ QMAKE_TARGET_BUNDLE_PREFIX = org.wfview
+ 
+ !win32:DEFINES += HOST=\\\"`hostname`\\\" UNAME=\\\"`whoami`\\\"
+-!win32:DEFINES += GITSHORT="\\\"$(shell git -C \"$$PWD\" rev-parse --short HEAD)\\\""
++!win32:GITSHORT = "$$system(git -C \"$$PWD\" rev-parse --short HEAD 2>/dev/null || echo v$$VERSION)"
++!win32:DEFINES += GITSHORT=\\\"$$GITSHORT\\\"
+ 
+ win32:DEFINES += GITSHORT=\\\"$$system(git -C $$PWD rev-parse --short HEAD)\\\"
+ win32:DEFINES += HOST=\\\"$$system(hostname)\\\"
