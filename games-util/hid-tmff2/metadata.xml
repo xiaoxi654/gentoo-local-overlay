@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+	<maintainer type="person">
+		<name>Yoshida Kanae</name>
+		<email>xiaoxi@izm.im</email>
+	</maintainer>
+	<longdescription lang="en">
+		Out-of-tree force-feedback driver for Thrustmaster racing wheels,
+		including the T300RS and T248, with experimental support for other
+		models. Includes the hid-tminit and usb-tminit initialization modules.
+		Kernel modules are built and installed using Gentoo's linux-mod-r1
+		eclass rather than DKMS.
+		Modules are installed in the kernel's updates directory. When migrating
+		from a manual installation, enable modules-compress if the existing
+		modules follow the kernel's compression setting, or remove stale copies
+		with a different compression format before loading the new driver.
+		The 9999 live ebuild tracks the upstream default branch and uses the
+		hid-tminit submodule revision recorded by that branch.
+	</longdescription>
+	<use>
+		<flag name="steamdeck">Install upstream hidraw access rules for Steam Deck systems</flag>
+	</use>
+	<upstream>
+		<remote-id type="github">Kimplul/hid-tmff2</remote-id>
+		<bugs-to>https://github.com/Kimplul/hid-tmff2/issues</bugs-to>
+	</upstream>
+</pkgmetadata>

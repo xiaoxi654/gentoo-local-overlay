@@ -1,0 +1,16 @@
+BDEPEND=dev-util/pahole sys-apps/kmod[tools] modules-sign? ( dev-libs/openssl virtual/pkgconfig ) virtual/pkgconfig
+DEFINED_PHASES=compile install postinst postrm prepare setup
+DEPEND=virtual/linux-sources
+DESCRIPTION=Force-feedback driver for Thrustmaster racing wheels
+EAPI=8
+HOMEPAGE=https://github.com/Kimplul/hid-tmff2
+IDEPEND=sys-apps/kmod[tools]
+INHERIT=linux-mod-r1 udev
+IUSE=steamdeck dist-kernel modules-compress modules-sign +strip
+KEYWORDS=~amd64
+LICENSE=GPL-2 GPL-2+ GPL-3
+RDEPEND=virtual/udev sys-apps/kmod[tools] dist-kernel? ( virtual/dist-kernel:= )
+SLOT=0
+SRC_URI=https://github.com/Kimplul/hid-tmff2/archive/7a1274d25b2304deed326c5a43bf3617fedcb990.tar.gz -> hid-tmff2-0.83_p20261110.tar.gz https://github.com/Kimplul/hid-tminit/archive/8c4547288a6c182ed4ff131e36f710f11a76c4a9.tar.gz -> hid-tminit-8c4547288a6c182ed4ff131e36f710f11a76c4a9.tar.gz
+_eclasses_=mount-boot-utils	2551bac1a772f4b6beacb494a750ae92	toolchain-funcs	58a918e3a42d0156f010dcfd43725be5	dist-kernel-utils	8df0d36d9be6b29df11da25bfa7a9e60	edob	357e125b8c5cad0deccb625e537ea831	edo	e472083829a6e7ff43a197cf536728a2	linux-info	efd923656513c879204fec6638eadee5	multiprocessing	45d0620f25c2f063ad6276ecd9ed9399	linux-mod-r1	c07d9d48506ae94ea189c64f2f78a94a	udev	1a23882bb73bc31c64a6f00a5e515f34
+_md5_=b2af00e718ca9c2e93a3b7fe4be93368
