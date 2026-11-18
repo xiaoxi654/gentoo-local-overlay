@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+	<maintainer type="person">
+		<name>Yoshida Kanae</name>
+		<email>xiaoxi@izm.im</email>
+	</maintainer>
+	<longdescription lang="en">
+		Stream OpenXR applications to a VR headset. The live ebuild tracks
+		sapphire/solarxr-rewrite, builds the server with the SolarXR driver,
+		and applies the branch's patches to its pinned Monado revision.
+	</longdescription>
+	<use>
+		<flag name="pipewire">Enable the native PipeWire audio backend</flag>
+		<flag name="wireshark-plugins">Build the <pkg>net-analyzer/wireshark</pkg> dissector for the WiVRn protocol</flag>
+	</use>
+	<upstream>
+		<remote-id type="github">WiVRn/WiVRn</remote-id>
+		<bugs-to>https://github.com/WiVRn/WiVRn/issues</bugs-to>
+	</upstream>
+</pkgmetadata>
