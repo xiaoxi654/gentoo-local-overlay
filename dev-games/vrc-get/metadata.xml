@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+	<maintainer type="person">
+		<name>Yoshida Kanae</name>
+		<email>xiaoxi@izm.im</email>
+	</maintainer>
+	<longdescription lang="en">
+		Open-source command-line client of the VRChat Package Manager (VPM),
+		packaged without the ALCOM (vrc-get-gui) desktop frontend.
+	</longdescription>
+	<use>
+		<flag name="experimental-vcc">Enable experimental VCC project and Unity management subcommands</flag>
+	</use>
+	<upstream>
+		<remote-id type="github">vrc-get/vrc-get</remote-id>
+		<bugs-to>https://github.com/vrc-get/vrc-get/issues</bugs-to>
+		<changelog>https://github.com/vrc-get/vrc-get/blob/master/CHANGELOG.md</changelog>
+	</upstream>
+</pkgmetadata>
