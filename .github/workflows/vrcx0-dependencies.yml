@@ -1,0 +1,112 @@
+name: Build VRCX-0 dependency archives
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Upstream version (e.g. 2.36.0 or 2.36.0-beta.2)'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  bundle:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    outputs:
+      package: ${{ steps.source.outputs.package }}
+      commit: ${{ steps.source.outputs.commit }}
+      sha256: ${{ steps.source.outputs.sha256 }}
+      prerelease: ${{ steps.source.outputs.prerelease }}
+    steps:
+      - name: Resolve and pin upstream version
+        id: source
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          if [[ "$GITHUB_REF" != refs/heads/vrcx0-distfiles ]]; then
+            echo '::error::Select the vrcx0-distfiles branch.'
+            exit 1
+          fi
+          version=${VERSION#v}
+          if [[ ! $version =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z]+([.-][0-9A-Za-z]+)*)?$ ]]; then
+            echo '::error::Enter an upstream version such as 2.36.0 or 2.36.0-beta.2.'
+            exit 1
+          fi
+          package=vrcx0-$version
+          existing=$(git ls-remote "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}.git" "refs/tags/$package-deps-v1")
+          if [[ -n $existing ]]; then
+            echo "::error::Release tag $package-deps-v1 already exists; published assets are not overwritten."
+            exit 1
+          fi
+          tag=refs/tags/v$version
+          upstream=https://github.com/Map1en/VRCX-0
+          refs=$(git ls-remote --exit-code "$upstream.git" "$tag" "$tag^{}")
+          commit=$(awk -v tag="$tag" '$2 == tag {object = $1} $2 == tag "^{}" {peeled = $1} END {print (peeled ? peeled : object)}' <<< "$refs")
+          [[ $commit =~ ^[0-9a-f]{40}$ ]]
+          curl --fail --silent --show-error --location --retry 3 \
+            "$upstream/archive/$commit.tar.gz" --output "$RUNNER_TEMP/vrcx0-source.tar.gz"
+          sha256=$(sha256sum "$RUNNER_TEMP/vrcx0-source.tar.gz" | cut -d' ' -f1)
+          prerelease=false
+          [[ $version != *-* ]] || prerelease=true
+          {
+            echo "package=$package"
+            echo "commit=$commit"
+            echo "sha256=$sha256"
+            echo "prerelease=$prerelease"
+          } >> "$GITHUB_OUTPUT"
+          printf 'Upstream: `v%s` (`%s`)\n\nSource SHA-256: `%s`\n' \
+            "$version" "$commit" "$sha256" >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24.15.0'
+          package-manager-cache: false
+      - name: Prepare locked Cargo and npm dependencies
+        env:
+          PACKAGE: ${{ steps.source.outputs.package }}
+          COMMIT: ${{ steps.source.outputs.commit }}
+          SOURCE_SHA256: ${{ steps.source.outputs.sha256 }}
+        run: |
+          python3 .github/scripts/bundle-vrcx0-deps.py "$RUNNER_TEMP/vrcx0-source.tar.gz" distfiles \
+            --package "$PACKAGE" --commit "$COMMIT" --source-sha256 "$SOURCE_SHA256"
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: vrcx0-distfiles
+          path: distfiles/
+          if-no-files-found: error
+          compression-level: 0
+
+  publish:
+    needs: bundle
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
+        with:
+          name: vrcx0-distfiles
+          path: distfiles
+      - name: Publish two dependency archives
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PACKAGE: ${{ needs.bundle.outputs.package }}
+          COMMIT: ${{ needs.bundle.outputs.commit }}
+          SOURCE_SHA256: ${{ needs.bundle.outputs.sha256 }}
+          PRERELEASE: ${{ needs.bundle.outputs.prerelease }}
+        run: |
+          version=${PACKAGE#vrcx0-}
+          notes=$(printf '%s\n\nUpstream tag: `v%s`\nSource commit: `%s`\nSource SHA-256: `%s`\n' \
+            'Separate Cargo vendor and npm node_modules archives verified against upstream locks. Linux x86-64 glibc only; no prebuilt application.' \
+            "$version" "$COMMIT" "$SOURCE_SHA256")
+          args=(--latest=false --target "$GITHUB_SHA" --title "VRCX-0 $version dependency distfiles (v1)" --notes "$notes")
+          [[ $PRERELEASE != true ]] || args+=(--prerelease)
+          release=$(gh release create "$PACKAGE-deps-v1" --repo "$GITHUB_REPOSITORY" "${args[@]}" \
+            "distfiles/$PACKAGE-cargo.tar.xz" \
+            "distfiles/$PACKAGE-node-modules-linux-x64-gnu.tar.xz")
+          printf 'Published: %s\n' "$release" | tee -a "$GITHUB_STEP_SUMMARY"

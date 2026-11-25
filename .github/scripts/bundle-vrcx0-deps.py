@@ -100,8 +100,8 @@ def make_bundles(source, output, package, commit, source_sha256):
     with tarfile.open(source) as archive:
         crates = cargo_packages(tomllib.loads(archive.extractfile(f"{root}/Cargo.lock").read().decode()))
         npm = npm_packages(json.load(archive.extractfile(f"{root}/package-lock.json")))
-    if (len(crates), len(npm)) != (1014, 531):
-        raise ValueError(f"Unexpected lockfile counts: {len(crates)} Cargo, {len(npm)} npm")
+    if not crates or not npm:
+        raise ValueError(f"Empty dependency list: {len(crates)} Cargo, {len(npm)} npm")
 
     output.mkdir(parents=True, exist_ok=True)
     with TemporaryDirectory() as scratch:
