@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+	<maintainer type="person">
+		<name>Yoshida Kanae</name>
+		<email>xiaoxi@izm.im</email>
+	</maintainer>
+	<use>
+		<flag name="thinlto">Use ThinLTO instead of full LTO (requires the lto flag)</flag>
+	</use>
+	<upstream>
+		<remote-id type="github">Map1en/VRCX-0</remote-id>
+		<bugs-to>https://github.com/Map1en/VRCX-0/issues</bugs-to>
+		<changelog>https://github.com/Map1en/VRCX-0/releases</changelog>
+	</upstream>
+</pkgmetadata>

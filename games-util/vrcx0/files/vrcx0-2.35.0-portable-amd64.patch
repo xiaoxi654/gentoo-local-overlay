@@ -1,0 +1,10 @@
+Do not require x86-64-v2 for the Gentoo amd64 build.
+
+--- a/.cargo/config.toml
++++ b/.cargo/config.toml
+@@ -1,5 +1,2 @@
+-[target.'cfg(target_arch = "x86_64")']
+-rustflags = ["-C", "target-cpu=x86-64-v2"]
+-
+ [target.'cfg(all(windows, target_env = "msvc"))']
+ linker = "lld-link.exe"

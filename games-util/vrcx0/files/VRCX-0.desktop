@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=VRCX-0
+Comment=Desktop companion for VRChat
+Exec=vrcx-0 %u
+Icon=vrcx-0
+Terminal=false
+Categories=Game;
+StartupWMClass=vrcx-0
+MimeType=x-scheme-handler/vrcx-0;
