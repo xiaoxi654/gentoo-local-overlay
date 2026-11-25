@@ -9,6 +9,7 @@ from concurrent.futures import ThreadPoolExecutor
 import hashlib
 import hmac
 import json
+import os
 from pathlib import Path
 import shutil
 import subprocess
@@ -71,12 +72,32 @@ def npm_packages(lock):
     return packages
 
 
+def install_npm(project, cache, filled):
+    env = dict(os.environ, npm_config_cache=str(cache), npm_config_offline="true",
+               npm_config_prefer_online="false")
+    before = (project / "package-lock.json").read_bytes()
+    for start in range(0, len(filled), 32):
+        subprocess.run(["npm", "cache", "add", *filled[start:start + 32]], cwd=project, env=env, check=True)
+    subprocess.run(
+        ["npm", "ci", "--offline", "--ignore-scripts", "--include=dev", "--include=optional",
+         "--no-audit", "--no-fund"], cwd=project, env=env, check=True,
+    )
+    if (project / "package-lock.json").read_bytes() != before:
+        raise ValueError("npm ci changed the upstream lockfile")
+    subprocess.run(
+        ["node", "--input-type=commonjs", "-e",
+         "for (const name of process.argv.slice(1)) require(name)",
+         "@rolldown/binding-linux-x64-gnu", "@tailwindcss/oxide-linux-x64-gnu", "lightningcss-linux-x64-gnu"],
+        cwd=project, check=True,
+    )
+
+
 def make_bundles(source, output, package, commit, source_sha256):
     with source.open("rb") as stream:
         if hashlib.file_digest(stream, "sha256").hexdigest() != source_sha256:
             raise ValueError(f"{source}: upstream archive SHA-256 mismatch")
+    root = f"VRCX-0-{commit}"
     with tarfile.open(source) as archive:
-        root = f"VRCX-0-{commit}"
         crates = cargo_packages(tomllib.loads(archive.extractfile(f"{root}/Cargo.lock").read().decode()))
         npm = npm_packages(json.load(archive.extractfile(f"{root}/package-lock.json")))
     if (len(crates), len(npm)) != (1014, 531):
@@ -87,6 +108,11 @@ def make_bundles(source, output, package, commit, source_sha256):
         work = Path(scratch)
         (work / "vendor").mkdir()
         (work / "npm-distfiles").mkdir()
+        project = work / "npm-project"
+        project.mkdir()
+        with tarfile.open(source) as archive:
+            for filename in ("package.json", "package-lock.json", ".npmrc"):
+                (project / filename).write_bytes(archive.extractfile(f"{root}/{filename}").read())
 
         def vendor_crate(entry):
             key, (url, checksum) = entry
@@ -111,17 +137,19 @@ def make_bundles(source, output, package, commit, source_sha256):
             for _ in executor.map(fetch_npm, npm.items()):
                 pass
 
+        distfiles = sorted((work / "npm-distfiles").glob("*.tgz"))
+        install_npm(project, work / "npm-cache", distfiles)
+
         tar_options = ["tar", "--sort=name", "--mtime=@0", "--owner=0", "--group=0", "--numeric-owner"]
         subprocess.run(
             [*tar_options, "-I", "xz -T2 -3", "-cf", output / f"{package}-cargo.tar.xz", "vendor"],
             cwd=work, check=True,
         )
-        # Keep the exact tgz bytes: npm ci looks up these blobs by SRI digest.
         subprocess.run(
-            [*tar_options, "-cf", output / f"{package}-npm-linux-x64-gnu.tar", "npm-distfiles"],
-            cwd=work, check=True,
+            [*tar_options, "-I", "xz -T2 -3", "-cf", output / f"{package}-node-modules-linux-x64-gnu.tar.xz",
+             "node_modules"], cwd=project, check=True,
         )
-    print(f"Bundled {len(crates)} lock-verified Cargo crates and {len(npm)} lock-verified npm tarballs.")
+    print(f"Bundled {len(crates)} locked Cargo crates and an npm tree from {len(npm)} lock-verified tarballs.")
 
 
 def main():

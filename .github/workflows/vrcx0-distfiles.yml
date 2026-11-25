@@ -2,7 +2,7 @@ name: VRCX-0 dependency distfiles
 
 on:
   push:
-    branches: [vrcx0-distfiles-2.35.0-v1]
+    branches: [vrcx0-distfiles-2.35.0-v2]
 
 permissions:
   contents: read
@@ -15,6 +15,10 @@ jobs:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24.15.0'
+          package-manager-cache: false
       - name: Fetch and bundle upstream dependencies
         env:
           VRCX_COMMIT: 1b83673ba5d1eac524b62a7a2dd953c31745b99c
@@ -39,7 +43,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
         with:
           name: vrcx0-distfiles
           path: distfiles
@@ -47,8 +51,8 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create vrcx0-2.35.0-deps-v1 --repo "$GITHUB_REPOSITORY" \
-            --verify-tag --latest=false --title 'VRCX-0 2.35.0 dependency distfiles (v1)' \
-            --notes 'Offline distfiles verified against the v2.35.0 upstream Cargo and npm locks. npm targets Linux x64 glibc. No application binaries.' \
+          gh release create vrcx0-2.35.0-deps-v2 --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" --latest=false --title 'VRCX-0 2.35.0 dependency distfiles (v2)' \
+            --notes 'Separate Cargo vendor and ready-to-use npm node_modules archives built from the upstream v2.35.0 locks. Linux x86-64 glibc only. The VRCX-0 application is not prebuilt.' \
             distfiles/vrcx0-2.35.0-cargo.tar.xz \
-            distfiles/vrcx0-2.35.0-npm-linux-x64-gnu.tar
+            distfiles/vrcx0-2.35.0-node-modules-linux-x64-gnu.tar.xz
