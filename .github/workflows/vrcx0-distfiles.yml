@@ -1,0 +1,54 @@
+name: VRCX-0 dependency distfiles
+
+on:
+  push:
+    tags: [vrcx0-2.35.0-deps-v1]
+
+permissions:
+  contents: read
+
+jobs:
+  bundle:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - name: Fetch and bundle upstream dependencies
+        env:
+          VRCX_COMMIT: 1b83673ba5d1eac524b62a7a2dd953c31745b99c
+          VRCX_SHA256: 5006be235e10165649dd3aada474787352960802c87b8ab9c8cfc2625c119bf9
+        run: |
+          curl --fail --silent --show-error --location \
+            "https://github.com/Map1en/VRCX-0/archive/${VRCX_COMMIT}.tar.gz" \
+            --output vrcx0-2.35.0.tar.gz
+          python3 .github/scripts/bundle-vrcx0-deps.py vrcx0-2.35.0.tar.gz distfiles \
+            --package vrcx0-2.35.0 --commit "$VRCX_COMMIT" --source-sha256 "$VRCX_SHA256"
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: vrcx0-distfiles
+          path: distfiles/
+          if-no-files-found: error
+          compression-level: 0
+
+  publish:
+    needs: bundle
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6
+        with:
+          name: vrcx0-distfiles
+          path: distfiles
+      - name: Publish dependency archives
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" \
+            --verify-tag --latest=false --title 'VRCX-0 2.35.0 dependency distfiles (v1)' \
+            --notes 'Offline distfiles verified against the v2.35.0 upstream Cargo and npm locks. npm targets Linux x64 glibc. No application binaries.' \
+            distfiles/vrcx0-2.35.0-cargo.tar.xz \
+            distfiles/vrcx0-2.35.0-npm-linux-x64-gnu.tar
