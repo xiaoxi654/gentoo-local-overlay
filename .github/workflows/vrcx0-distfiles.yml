@@ -2,7 +2,7 @@ name: VRCX-0 dependency distfiles
 
 on:
   push:
-    tags: [vrcx0-2.35.0-deps-v1]
+    branches: [vrcx0-distfiles-2.35.0-v1]
 
 permissions:
   contents: read
@@ -47,7 +47,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" \
+          gh release create vrcx0-2.35.0-deps-v1 --repo "$GITHUB_REPOSITORY" \
             --verify-tag --latest=false --title 'VRCX-0 2.35.0 dependency distfiles (v1)' \
             --notes 'Offline distfiles verified against the v2.35.0 upstream Cargo and npm locks. npm targets Linux x64 glibc. No application binaries.' \
             distfiles/vrcx0-2.35.0-cargo.tar.xz \
